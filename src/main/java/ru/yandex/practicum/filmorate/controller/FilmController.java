@@ -11,7 +11,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Validated
@@ -22,43 +24,41 @@ import java.util.List;
         produces = MediaType.APPLICATION_JSON_VALUE
 )
 public class FilmController {
-    private final List<Film> films = new ArrayList<>();
-    protected int id;
-    public int getId() {
+    private final Map<Integer, Film> films = new HashMap<>();
+    private int id;
+    private int getId() {
         return ++id;
     }
+
 
     @GetMapping
     public List<Film> findAll() {
         log.debug("Current count of films: {}", films.size());
-        return films;
+        return new ArrayList<>(films.values());
     }
 
     @PostMapping
-    public Film create(@RequestBody @Valid @NotNull Film film) {
+    public Film create(@RequestBody @Valid Film film) {
         int id = getId();
         film.setId(id);
-        films.add(film);
+        films.put(id, film);
         log.info("Saved film: {}", film);
         return film;
     }
 
     @PutMapping
-    public Film upadte(@RequestBody @Valid @NotNull Film film) {
+    public Film update(@RequestBody @Valid Film film) {
         Integer id = film.getId();
         if (id == null || id < 1) {
             throw new ValidationException("Bad id");
         }
-        boolean filmExists = false;
-        for (int i = 0; i < films.size(); i++) {
-            if (films.get(i).getId() == id) {
-                filmExists = true;
-                films.set(i, film);
-                log.info("Updated film: {}", film);
-            }
-        }
-        if (!filmExists) {
+        boolean filmExists = films.containsKey(id);
+        if (filmExists) {
+            films.put(id, film);
+            log.info("Updated film: {}", film);
+        } else {
             throw new ValidationException("User does not exist");
         }
-        return film;    }
+        return film;
+    }
 }

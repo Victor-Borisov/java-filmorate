@@ -11,11 +11,9 @@ import java.time.LocalDate;
 @Data
 public class Film {
     private Integer id;
-    @NotNull(message = "Name must be not null")
     @NotBlank(message = "Name must be not blank")
     private String name;
 
-    @NotNull(message = "Description must be not null")
     @NotBlank(message = "Description must be not blank")
     @Size(max = 200, message = "Description must not be longer 200 characters")
     private String description;

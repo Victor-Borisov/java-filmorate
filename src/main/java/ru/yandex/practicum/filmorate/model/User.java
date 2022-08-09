@@ -9,17 +9,15 @@ import java.time.LocalDate;
 public class User {
     private Integer id;
 
-    @NotNull(message = "Email must be not null")
     @NotBlank(message = "Email must be not blank")
     @Email(message = "Email is incorrect")
     private String email;
 
-    @NotNull(message = "Login must be not null")
     @NotBlank(message = "Login must be not blank")
     @Pattern(regexp = "^\\S*$", message = "Login must not contain any space")
     private String login;
 
     private String name;
-    @Past
+    @PastOrPresent
     private LocalDate birthday;
 }
