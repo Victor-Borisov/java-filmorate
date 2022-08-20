@@ -8,6 +8,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.io.ObjectInputFilter;
 import java.time.LocalDate;
@@ -15,7 +16,9 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UserControllerTest {
-    private static final UserController userController = new UserController();
+    private static final InMemoryUserStorage userStorage = new InMemoryUserStorage();
+
+    private static final UserController userController = new UserController(userStorage);
 
     @Test
     void createUserShouldUseLoginWithNoName() {
