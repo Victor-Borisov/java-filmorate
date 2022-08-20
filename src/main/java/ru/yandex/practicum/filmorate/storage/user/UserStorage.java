@@ -7,12 +7,12 @@ import java.util.List;
 public interface UserStorage {
     List<User> findAll();
 
-    User findById(long id);
+    User findById(Integer id);
 
     User create(User user);
 
     User update(User user);
 
-    User deleteById(long id);
+    User deleteById(Integer id);
 
 }

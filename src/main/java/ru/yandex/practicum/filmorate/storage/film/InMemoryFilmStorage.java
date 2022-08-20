@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.ObjectDoesNotExistException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -26,9 +27,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film findById(long id) {
-
-        return null;
+    public Film findById(Integer id) {
+        boolean filmExists = films.containsKey(id);
+        if (filmExists) {
+            return films.get(id);
+        } else {
+            throw new ObjectDoesNotExistException("Film does not exist");
+        }
     }
 
     @Override
@@ -42,22 +47,18 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        Integer id = film.getId();
-        if (id == null || id < 1) {
-            throw new ValidationException("Bad id");
-        }
-        boolean filmExists = films.containsKey(id);
-        if (filmExists) {
-            films.put(id, film);
-            log.info("Updated film: {}", film);
-        } else {
-            throw new ValidationException("User does not exist");
-        }
+        films.put(id, film);
+        log.info("Updated user: {}", film);
         return film;
     }
 
     @Override
-    public Film deleteById(long id) {
-        return null;
+    public Film deleteById(Integer id) {
+        boolean filmExists = films.containsKey(id);
+        if (filmExists) {
+            return films.remove(id);
+        } else {
+            return null;
+        }
     }
 }

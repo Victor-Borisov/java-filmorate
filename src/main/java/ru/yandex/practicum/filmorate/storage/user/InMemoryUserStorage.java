@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.ObjectDoesNotExistException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -18,12 +19,6 @@ public class InMemoryUserStorage implements UserStorage {
     private int getId() {
         return ++id;
     }
-    private void validateName(User user) {
-        String name = user.getName();
-        if (name == null || name.isBlank()) {
-            user.setName(user.getLogin());
-        }
-    }
 
     @Override
     public List<User> findAll() {
@@ -32,15 +27,19 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User findById(long id) {
-        return null;
+    public User findById(Integer id) {
+        boolean userExists = users.containsKey(id);
+        if (userExists) {
+            return users.get(id);
+        } else {
+            throw new ObjectDoesNotExistException("User does not exist");
+        }
     }
 
     @Override
     public User create(User user) {
         int id = getId();
         user.setId(id);
-        validateName(user);
         users.put(id, user);
         log.info("Saved user: {}", user);
         return user;
@@ -48,23 +47,20 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        Integer id = user.getId();
-        if (id == null || id < 1) {
-            throw new ValidationException("Bad id");
-        }
-        boolean userExists = users.containsKey(id);
-        if (userExists) {
-            validateName(user);
-            users.put(id, user);
-            log.info("Updated user: {}", user);
-        } else {
-            throw new ValidationException("User does not exist");
-        }
+        User storedUser = users.get(user.getId());
+        user.setFriends(storedUser.getFriends());
+        users.put(id, user);
+        log.info("Updated user: {}", user);
         return user;
     }
 
     @Override
-    public User deleteById(long id) {
-        return null;
+    public User deleteById(Integer id) {
+        boolean userExists = users.containsKey(id);
+        if (userExists) {
+            return users.remove(id);
+        } else {
+            return null;
+        }
     }
 }

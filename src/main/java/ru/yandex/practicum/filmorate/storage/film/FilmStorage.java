@@ -7,11 +7,11 @@ import java.util.List;
 public interface FilmStorage {
     List<Film> findAll();
 
-    Film findById(long id);
+    Film findById(Integer id);
 
     Film create(Film film);
 
     Film update(Film film);
 
-    Film deleteById(long id);
+    Film deleteById(Integer id);
 }

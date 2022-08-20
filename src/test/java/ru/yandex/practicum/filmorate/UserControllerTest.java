@@ -8,7 +8,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.io.ObjectInputFilter;
 import java.time.LocalDate;
@@ -16,9 +18,10 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UserControllerTest {
-    private static final InMemoryUserStorage userStorage = new InMemoryUserStorage();
+    private static final UserStorage userStorage = new InMemoryUserStorage();
+    private static final UserService userService = new UserService(userStorage);
 
-    private static final UserController userController = new UserController(userStorage);
+    private static final UserController userController = new UserController(userService);
 
     @Test
     void createUserShouldUseLoginWithNoName() {
