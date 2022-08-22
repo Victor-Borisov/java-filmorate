@@ -10,19 +10,14 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class UserService {
-    UserStorage userStorage;
+    private final UserStorage userStorage;
     @Autowired
     public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
-    }
-    private void validateName(User user) {
-        String name = user.getName();
-        if (name == null || name.isBlank()) {
-            user.setName(user.getLogin());
-        }
     }
 
     public List<User> findAll() {
@@ -30,10 +25,9 @@ public class UserService {
     }
 
     public User findById(Integer id) {
-        return userStorage.findById(id);
+        return userStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
     }
     public User create(User user) {
-        validateName(user);
         return userStorage.create(user);
     }
 
@@ -45,8 +39,7 @@ public class UserService {
         if (id < 1) {
             throw new ObjectDoesNotExistException("User does not exist");
         }
-        if (userStorage.findById(id) != null) {
-            validateName(user);
+        if (userStorage.findById(id).isPresent()) {
             return userStorage.update(user);
         } else {
             throw new ObjectDoesNotExistException("User does not exist");
@@ -54,33 +47,35 @@ public class UserService {
     }
 
     public User addFriend(Integer id, Integer friendId) {
-        User user = userStorage.findById(id);
-        User friend = userStorage.findById(friendId);
+        User user = userStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
+        User friend = userStorage.findById(friendId).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
         user.addFriend(friend.getId());
         friend.addFriend(user.getId());
         return user;
     }
 
     public User deleteFriend(Integer id, Integer friendId) {
-        User user = userStorage.findById(id);
-        User friend = userStorage.findById(friendId);
+        User user = userStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
+        User friend = userStorage.findById(friendId).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
         user.deleteFriend(friendId);
         friend.deleteFriend(id);
         return user;
     }
 
     public List<User> getFriends(Integer id) {
-        User user = userStorage.findById(id);
+        User user = userStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
         return user.getFriends().stream()
                 .map(userStorage::findById)
+                .flatMap(o -> o.isPresent() ? Stream.of(o.get()) : Stream.empty())
                 .collect(Collectors.toList());
     }
     public List<User> getCommonFriends(Integer id, Integer friendId) {
-        User user = userStorage.findById(id);
-        User friendUser = userStorage.findById(friendId);
+        User user = userStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
+        User friendUser = userStorage.findById(friendId).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
         return user.getFriends().stream()
                 .filter(friendUser.getFriends()::contains)
                 .map(userStorage::findById)
+                .flatMap(o -> o.isPresent() ? Stream.of(o.get()) : Stream.empty())
                 .collect(Collectors.toList());
     }
 }

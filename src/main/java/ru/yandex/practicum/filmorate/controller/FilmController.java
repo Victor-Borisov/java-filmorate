@@ -10,7 +10,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.util.List;
+import java.util.Optional;
 
 
 @Validated
@@ -58,7 +60,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(name= "count", defaultValue = "10") String count) {
+    public List<Film> getPopular(@RequestParam(name= "count", defaultValue = "10") @Positive int count) {
         return filmService.getPopular(count);
     }
 }

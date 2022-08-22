@@ -6,10 +6,7 @@ import ru.yandex.practicum.filmorate.exception.ObjectDoesNotExistException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -27,13 +24,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User findById(Integer id) {
-        boolean userExists = users.containsKey(id);
-        if (userExists) {
-            return users.get(id);
-        } else {
-            throw new ObjectDoesNotExistException("User does not exist");
-        }
+    public Optional<User> findById(Integer id) {
+        return Optional.ofNullable(users.get(id));
     }
 
     @Override
@@ -47,20 +39,13 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        User storedUser = users.get(user.getId());
-        user.setFriends(storedUser.getFriends());
         users.put(id, user);
         log.info("Updated user: {}", user);
         return user;
     }
 
     @Override
-    public User deleteById(Integer id) {
-        boolean userExists = users.containsKey(id);
-        if (userExists) {
-            return users.remove(id);
-        } else {
-            return null;
-        }
+    public Optional<User> deleteById(Integer id) {
+        return Optional.ofNullable(users.remove(id));
     }
 }

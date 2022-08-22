@@ -6,10 +6,7 @@ import ru.yandex.practicum.filmorate.exception.ObjectDoesNotExistException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -27,13 +24,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film findById(Integer id) {
-        boolean filmExists = films.containsKey(id);
-        if (filmExists) {
-            return films.get(id);
-        } else {
-            throw new ObjectDoesNotExistException("Film does not exist");
-        }
+    public Optional<Film> findById(Integer id) {
+        return Optional.ofNullable(films.get(id));
     }
 
     @Override
@@ -53,12 +45,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film deleteById(Integer id) {
-        boolean filmExists = films.containsKey(id);
-        if (filmExists) {
-            return films.remove(id);
-        } else {
-            return null;
-        }
+    public Optional<Film> deleteById(Integer id) {
+        return Optional.ofNullable(films.remove(id));
     }
 }

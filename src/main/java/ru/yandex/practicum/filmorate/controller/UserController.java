@@ -27,7 +27,14 @@ import java.util.Map;
         produces = MediaType.APPLICATION_JSON_VALUE
 )
 public class UserController {
-    UserService userService;
+    private final UserService userService;
+    private void validateName(User user) {
+        String name = user.getName();
+        if (name == null || name.isBlank()) {
+            user.setName(user.getLogin());
+        }
+    }
+
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
@@ -44,11 +51,13 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody @Valid User user) {
+        validateName(user);
         return userService.create(user);
     }
 
     @PutMapping
     public User update(@RequestBody @Valid User user) {
+        validateName(user);
         return userService.update(user);
     }
     @PutMapping("/{id}/friends/{friendId}")

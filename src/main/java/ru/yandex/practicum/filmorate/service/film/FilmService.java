@@ -9,16 +9,13 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
-    FilmStorage filmStorage;
-    UserStorage userStorage;
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
@@ -29,7 +26,7 @@ public class FilmService {
     }
 
     public Film findById(Integer id) {
-        return filmStorage.findById(id);
+        return filmStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("Film does not exist"));
     }
     public Film create(Film film) {
         return filmStorage.create(film);
@@ -43,7 +40,7 @@ public class FilmService {
         if (id < 1) {
             throw new ObjectDoesNotExistException("Film does not exist");
         }
-        if (filmStorage.findById(id) != null) {
+        if (filmStorage.findById(id).isPresent()) {
             return filmStorage.update(film);
         } else {
             throw new ObjectDoesNotExistException("Film does not exist");
@@ -51,27 +48,19 @@ public class FilmService {
     }
 
     public Film addLike(Integer id, Integer userId) {
-        Film film = filmStorage.findById(id);
+        Film film = filmStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("Film does not exist"));
         film.addLike(userId);
         return film;
     }
 
     public Film deleteLike(Integer id, Integer userId) {
-        Film film = filmStorage.findById(id);
-        User user = userStorage.findById(userId);
-        if (film != null && user != null) {
-            film.deleteLike(userId);
-        }
+        Film film = filmStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("Film does not exist"));
+        User user = userStorage.findById(userId).orElseThrow(() -> new ObjectDoesNotExistException("Film does not exist"));
+        film.deleteLike(userId);
         return film;
     }
 
-    public List<Film> getPopular(String countString) {
-        int count;
-        try {
-            count = Integer.parseInt(countString);
-        } catch (Exception e) {
-            throw new ValidationException("Bad count");
-        }
+    public List<Film> getPopular(int count) {
         List<Film> popularity = filmStorage.findAll();
         popularity.sort(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed());
         return popularity.stream().limit(count).collect(Collectors.toList());
