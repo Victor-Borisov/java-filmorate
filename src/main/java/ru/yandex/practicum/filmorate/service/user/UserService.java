@@ -36,46 +36,38 @@ public class UserService {
         if (id == null) {
             throw new ValidationException("Bad id");
         }
-        if (id < 1) {
-            throw new ObjectDoesNotExistException("User does not exist");
-        }
-        if (userStorage.findById(id).isPresent()) {
-            return userStorage.update(user);
-        } else {
-            throw new ObjectDoesNotExistException("User does not exist");
-        }
+        findById(id);
+        return userStorage.update(user);
     }
 
     public User addFriend(Integer id, Integer friendId) {
-        User user = userStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
-        User friend = userStorage.findById(friendId).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
+        User user = findById(id);
+        User friend = findById(friendId);
         user.addFriend(friend.getId());
         friend.addFriend(user.getId());
         return user;
     }
 
     public User deleteFriend(Integer id, Integer friendId) {
-        User user = userStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
-        User friend = userStorage.findById(friendId).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
+        User user = findById(id);
+        User friend = findById(friendId);
         user.deleteFriend(friendId);
         friend.deleteFriend(id);
         return user;
     }
 
     public List<User> getFriends(Integer id) {
-        User user = userStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
+        User user = findById(id);
         return user.getFriends().stream()
-                .map(userStorage::findById)
-                .flatMap(o -> o.isPresent() ? Stream.of(o.get()) : Stream.empty())
+                .map(this::findById)
                 .collect(Collectors.toList());
     }
     public List<User> getCommonFriends(Integer id, Integer friendId) {
-        User user = userStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
-        User friendUser = userStorage.findById(friendId).orElseThrow(() -> new ObjectDoesNotExistException("User does not exist"));
+        User user = findById(id);
+        User friendUser = findById(friendId);
         return user.getFriends().stream()
                 .filter(friendUser.getFriends()::contains)
-                .map(userStorage::findById)
-                .flatMap(o -> o.isPresent() ? Stream.of(o.get()) : Stream.empty())
+                .map(this::findById)
                 .collect(Collectors.toList());
     }
 }
