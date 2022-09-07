@@ -1,10 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -26,14 +24,14 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> findAll() {
-        final String sq = "SELECT user_id, email, login, name, birthday FROM users;";
-        return jdbcTemplate.query(sq, (rs, rowNum) -> mapRowToUser(rs));
+        final String qs = "SELECT user_id, email, login, name, birthday FROM users;";
+        return jdbcTemplate.query(qs, (rs, rowNum) -> mapRowToUser(rs));
     }
 
     @Override
     public Optional<User> findById(Integer id) {
-        final String sq = "SELECT user_id, email, login, name, birthday FROM users WHERE user_id = ?;";
-        final List<User> users = jdbcTemplate.query(sq, (rs, rowNum) -> mapRowToUser(rs), id);
+        final String qs = "SELECT user_id, email, login, name, birthday FROM users WHERE user_id = ?;";
+        final List<User> users = jdbcTemplate.query(qs, (rs, rowNum) -> mapRowToUser(rs), id);
         return users.size() > 0 ? Optional.of(users.get(0)) : Optional.empty();
     }
 
@@ -53,16 +51,18 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        final String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
-        jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
-        return null;
+        final String qs = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
+        jdbcTemplate.update(qs, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
+        return user;
     }
 
     @Override
     public Optional<User> deleteById(Integer id) {
         Optional<User> user = findById(id);
-        final String sql = "DELETE FROM users WHERE user_id = ?";
-        jdbcTemplate.update(sql, id);
+        if (user.isPresent()) {
+            final String qs = "DELETE FROM users WHERE user_id = ?";
+            jdbcTemplate.update(qs, id);
+        }
         return user;
     }
 

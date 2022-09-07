@@ -3,12 +3,14 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
+import ru.yandex.practicum.filmorate.storage.frienship.FriendshipDbStorage;
 import ru.yandex.practicum.filmorate.storage.frienship.FriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.frienship.InMemoryFriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -16,8 +18,11 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UserControllerTest {
-    private static final UserStorage userStorage = new InMemoryUserStorage();
-    private static final FriendshipStorage friendshipStorage = new InMemoryFriendshipStorage();
+    @Autowired
+    private static JdbcTemplate jdbcTemplate;
+
+    private static final UserStorage userStorage = new UserDbStorage(jdbcTemplate);
+    private static final FriendshipStorage friendshipStorage = new FriendshipDbStorage(jdbcTemplate);
     private static final UserService userService = new UserService(userStorage, friendshipStorage);
 
     private static final UserController userController = new UserController(userService);

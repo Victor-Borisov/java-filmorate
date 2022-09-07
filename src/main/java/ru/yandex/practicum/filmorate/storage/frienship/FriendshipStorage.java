@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.frienship;
 
-import org.springframework.data.relational.core.sql.In;
 import ru.yandex.practicum.filmorate.model.Friendship;
 
 import java.util.List;

@@ -7,7 +7,7 @@ import lombok.Data;
 @Builder
 public class Friendship {
     private Integer id;
-    private User user1;
-    private User user2;
-    private int status;
+    private int userId1;
+    private int userId2;
+    private int statusId;
 }

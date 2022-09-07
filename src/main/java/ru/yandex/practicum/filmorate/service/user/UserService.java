@@ -19,8 +19,8 @@ public class UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
     @Autowired
-    public UserService(@Qualifier("inMemoryUserStorage") UserStorage userStorage,
-        @Qualifier("inMemoryFriendshipStorage") FriendshipStorage friendshipStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+        @Qualifier("friendshipDbStorage") FriendshipStorage friendshipStorage) {
         this.userStorage = userStorage;
         this.friendshipStorage = friendshipStorage;
     }
@@ -46,15 +46,15 @@ public class UserService {
     }
 
     public Friendship addFriend(Integer id, Integer friendId) {
-        User user1 = findById(id);
-        User user2 = findById(friendId);
+        findById(id);
+        findById(friendId);
         Optional<Friendship> friendship = friendshipStorage.findFriendshipByUserIds(id, friendId);
         if (friendship.isEmpty()) {
             return friendshipStorage.create(Friendship.builder()
                     .id(0)
-                    .user1(user1)
-                    .user2(user2)
-                    .status(1)
+                    .userId1(id)
+                    .userId2(friendId)
+                    .statusId(1)
                     .build());
         } else {
             return friendship.get();
@@ -62,14 +62,10 @@ public class UserService {
     }
 
     public Friendship deleteFriend(Integer id, Integer friendId) {
-        User user1 = findById(id);
-        User user2 = findById(friendId);
-        Optional<Friendship> friendship = friendshipStorage.findFriendshipByUserIds(id, friendId);
-        if (friendship.isPresent()) {
-            return friendshipStorage.delete(id, friendId).get();
-        } else {
-            return friendship.get();
-        }
+        findById(id);
+        findById(friendId);
+        friendshipStorage.findFriendshipByUserIds(id, friendId);
+        return friendshipStorage.delete(id, friendId).orElseThrow(() -> new ObjectDoesNotExistException("Friendship does not exist"));
     }
 
     public List<User> getFriends(Integer id) {

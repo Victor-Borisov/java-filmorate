@@ -17,18 +17,18 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
 
     @Override
     public Optional<Friendship> findFriendshipByUserIds(Integer id1, Integer id2) {
-        Optional<Friendship> friendshipDelete = Optional.empty();
+        Optional<Friendship> friendshipFound = Optional.empty();
         for (Friendship friendship : friendships.values()) {
-            if (friendship.getUser1().getId() == id1 && friendship.getUser2().getId() == id2) {
-                friendshipDelete = Optional.of(friendship);
+            if (friendship.getUserId1() == id1 && friendship.getUserId2() == id2) {
+                friendshipFound = Optional.of(friendship);
                 break;
             }
-            if (friendship.getUser1().getId() == id2 && friendship.getUser2().getId() == id1) {
-                friendshipDelete = Optional.of(friendship);
+            if (friendship.getUserId1() == id2 && friendship.getUserId2() == id1) {
+                friendshipFound = Optional.of(friendship);
                 break;
             }
         }
-        return friendshipDelete;
+        return friendshipFound;
     }
 
     @Override
@@ -50,9 +50,7 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
     @Override
     public Optional<Friendship> delete(Integer id1, Integer id2) {
         Optional<Friendship> friendshipDelete = findFriendshipByUserIds(id1, id2);
-        if (friendshipDelete.isPresent()) {
-            friendships.remove(friendshipDelete.get().getId());
-        }
+        friendshipDelete.ifPresent(friendship -> friendships.remove(friendship.getId()));
         return friendshipDelete;
     }
 
@@ -61,11 +59,11 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
     public List<Integer> getFriendIdsByUserId(Integer id) {
         List<Integer> ids = new ArrayList<>();
         for (Friendship friendship : friendships.values()) {
-            if (friendship.getUser1().getId() == id) {
-                ids.add(friendship.getUser2().getId());
+            if (friendship.getUserId1() == id) {
+                ids.add(friendship.getUserId2());
             }
-            if (friendship.getUser2().getId() == id) {
-                ids.add(friendship.getUser1().getId());
+            if (friendship.getUserId2() == id) {
+                ids.add(friendship.getUserId1());
             }
         }
         return ids;
@@ -74,15 +72,15 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
     @Override
     public List<Integer> getCommonFriendIdsByUserIds(Integer id1, Integer id2) {
         List<Integer> ids = new ArrayList<>();
-        Integer id3;
+        int id3;
         for (Friendship friendship : friendships.values()) {
-            if (friendship.getUser1().getId() == id1 && friendship.getUser2().getId() != id2) {
-                id3 = friendship.getUser2().getId();
+            if (friendship.getUserId1() == id1 && friendship.getUserId2() != id2) {
+                id3 = friendship.getUserId2();
                 for (Friendship interFriendship : friendships.values()) {
-                    if (interFriendship.getUser1().getId() == id3 && interFriendship.getUser2().getId() == id2) {
-                        ids.add(interFriendship.getUser1().getId());
-                    } else if (interFriendship.getUser2().getId() == id3 && interFriendship.getUser1().getId() == id2) {
-                        ids.add(interFriendship.getUser2().getId());
+                    if (interFriendship.getUserId1() == id3 && interFriendship.getUserId2() == id2) {
+                        ids.add(interFriendship.getUserId1());
+                    } else if (interFriendship.getUserId2() == id3 && interFriendship.getUserId1() == id2) {
+                        ids.add(interFriendship.getUserId2());
                     }
                 }
             }
