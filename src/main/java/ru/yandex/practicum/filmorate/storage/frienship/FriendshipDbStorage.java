@@ -68,10 +68,8 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
     @Override
     public List<Integer> getFriendIdsByUserId(Integer id) {
-        final String qs = "SELECT user_id_2 FROM friendship WHERE user_id_1 = ? " +
-            "UNION " +
-            "SELECT user_id_1 FROM friendship WHERE user_id_2 = ?";
-        return jdbcTemplate.queryForList(qs, Integer.class, id, id);
+        final String qs = "SELECT user_id_2 FROM friendship WHERE user_id_1 = ?";
+        return jdbcTemplate.queryForList(qs, Integer.class, id);
     }
 
     @Override
@@ -81,21 +79,13 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 "         SELECT f.user_id_2 " +
                 "         FROM friendship f " +
                 "         WHERE f.user_id_1 = ? " +
-                "         UNION " +
-                "         SELECT f.user_id_1 " +
-                "         FROM friendship f " +
-                "         WHERE f.user_id_2  = ? " +
                 "     ) a " +
-                "         INNER JOIN ( " +
+                "INNER JOIN ( " +
                 "    SELECT f.user_id_2 " +
                 "    FROM friendship f " +
                 "    WHERE f.user_id_1 = ? " +
-                "    UNION " +
-                "    SELECT f.user_id_1 " +
-                "    FROM friendship f " +
-                "    WHERE f.user_id_2  = ? " +
                 ") b on a.user_id_2  = b.user_id_2";
-        return jdbcTemplate.queryForList(qs, Integer.class, id1, id1, id2, id2);
+        return jdbcTemplate.queryForList(qs, Integer.class, id1, id2);
     }
 
     private Friendship mapRowToFriendship(ResultSet rs) throws SQLException {
