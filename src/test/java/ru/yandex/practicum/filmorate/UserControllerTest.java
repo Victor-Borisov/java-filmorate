@@ -2,8 +2,11 @@ package ru.yandex.practicum.filmorate;
 
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,9 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserControllerTest {
     private final UserController userController;
-
+    @Order(1000)
     @Test
     void createUserShouldUseLoginWithNoName() {
         User user = User.builder()
