@@ -55,11 +55,5 @@ public class UserDbStorageTest {
                         Assertions.assertThat(user).hasFieldOrPropertyWithValue("login", "doloreUpdate")
                 );
     }
-    @Order(40)
-    @Test
-    void deleteUserTest() {
-        userDbStorage.deleteById(2);
-        Assertions.assertThat(userDbStorage.findById(2)).isEmpty();
-    }
 
 }

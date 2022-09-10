@@ -29,7 +29,7 @@ public class FilmDbStorageTest {
     private final FilmLikeDbStorage filmLikeDbStorage;
     private final UserDbStorage userDbStorage;
 
-    @Order(10)
+    @Order(310)
     @Test
     void createAndFindAllFilmTest() {
         Mpa mpa1 = Mpa.builder().id(5).build();
@@ -48,7 +48,7 @@ public class FilmDbStorageTest {
         filmDbStorage.create(film2);
         Assertions.assertThat(filmDbStorage.findAll()).hasSize(2);
     }
-    @Order(20)
+    @Order(320)
     @Test
     void findByIdFilmTest() {
         Assertions.assertThat(filmDbStorage.findById(1)).isPresent()
@@ -56,7 +56,7 @@ public class FilmDbStorageTest {
                         Assertions.assertThat(user).hasFieldOrPropertyWithValue("name", "Film")
                 );
     }
-    @Order(30)
+    @Order(330)
     @Test
     void updateFilmTest() {
         Mpa mpa1 = Mpa.builder().id(5).build();
@@ -69,7 +69,7 @@ public class FilmDbStorageTest {
                         Assertions.assertThat(film).hasFieldOrPropertyWithValue("name", "Film Updated")
                 );
     }
-    @Order(40)
+    @Order(340)
     @Test
     void findFilmGenreByFilmIdGenreIdTest() {
         Assertions.assertThat(filmDbStorage.findFilmGenreByFilmIdGenreId(2, 2)).isPresent()
@@ -78,19 +78,19 @@ public class FilmDbStorageTest {
                 );
     }
 
-    @Order(50)
+    @Order(350)
     @Test
     void findGenresByFilmIdTest() {
         Assertions.assertThat(filmDbStorage.findGenresByFilmId(2)).hasSize(2);
     }
 
-    @Order(60)
+    @Order(360)
     @Test
     void findAllMpaTest() {
         Assertions.assertThat(filmDbStorage.findAllMpa()).hasSize(5);
     }
 
-    @Order(70)
+    @Order(370)
     @Test
     void findMpaByIdTest() {
         Assertions.assertThat(filmDbStorage.findMpaById(3)).isPresent()
@@ -99,13 +99,13 @@ public class FilmDbStorageTest {
                 );
     }
 
-    @Order(80)
+    @Order(380)
     @Test
     void findAllGenreTest() {
         Assertions.assertThat(filmDbStorage.findAllGenre()).hasSize(6);
     }
 
-    @Order(90)
+    @Order(390)
     @Test
     void findGenreByIdTest() {
         Assertions.assertThat(filmDbStorage.findGenreById(1)).isPresent()
@@ -114,16 +114,17 @@ public class FilmDbStorageTest {
                 );
     }
 
-    @Order(100)
+    @Order(400)
     @Test
     void createFilmLikeTest() {
-        User user1 = User.builder().email("mail@yandex.ru").login("dolore").name("Nick Name")
-                .birthday(LocalDate.of(1976, 9, 20)).build();
-        userDbStorage.create(user1);
-        User user2 = User.builder().email("friend@mail.ru").login("friend").name("friend adipisicing")
-                .birthday(LocalDate.of(1976, 8, 20)).build();
-        userDbStorage.create(user2);
-
+        if (userDbStorage.findAll().size() == 0) {
+            User user1 = User.builder().email("mail@yandex.ru").login("dolore").name("Nick Name")
+                    .birthday(LocalDate.of(1976, 9, 20)).build();
+            userDbStorage.create(user1);
+            User user2 = User.builder().email("friend@mail.ru").login("friend").name("friend adipisicing")
+                    .birthday(LocalDate.of(1976, 8, 20)).build();
+            userDbStorage.create(user2);
+        }
 
         Assertions.assertThat(filmLikeDbStorage.createFilmLike(1, 2)).isPresent()
                 .hasValueSatisfying(filmLike ->
@@ -135,7 +136,7 @@ public class FilmDbStorageTest {
                 );
     }
 
-    @Order(110)
+    @Order(410)
     @Test
     void findFilmLikeByIdTest() {
         Assertions.assertThat(filmLikeDbStorage.findFilmLikeById(1)).isPresent()
@@ -144,7 +145,7 @@ public class FilmDbStorageTest {
                 );
     }
 
-    @Order(120)
+    @Order(420)
     @Test
     void findFilmLikeByUserIdFilmIdTest() {
         Assertions.assertThat(filmLikeDbStorage.findFilmLikeByUserIdFilmId(1, 2)).isPresent()
@@ -153,11 +154,17 @@ public class FilmDbStorageTest {
                 );
     }
 
-    @Order(120)
+    @Order(430)
     @Test
     void getPopularTest() {
         Assertions.assertThat(filmDbStorage.getPopular(10)).first()
                 .hasFieldOrPropertyWithValue("name", "New film");
+    }
+    @Order(440)
+    @Test
+    void deleteUserTest() {
+        userDbStorage.deleteById(2);
+        Assertions.assertThat(userDbStorage.findById(2)).isEmpty();
     }
 
 }
