@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -12,8 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-@Component
-@Slf4j
+@Repository
 public class FriendshipDbStorage implements FriendshipStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -25,12 +25,9 @@ public class FriendshipDbStorage implements FriendshipStorage {
     @Override
     public Optional<Friendship> findFriendshipByUserIds(Integer id1, Integer id2) {
         final String qs = "SELECT friendship_id, user_id_1, user_id_2, friendship_status_id " +
-            "FROM friendship WHERE user_id_1 = ? and user_id_2 = ?" +
-            "UNION " +
-            "SELECT friendship_id, user_id_1, user_id_2, friendship_status_id " +
-            "FROM friendship WHERE user_id_2 = ? and user_id_1 = ?";
+            "FROM friendship WHERE user_id_1 = ? and user_id_2 = ?";
         final List<Friendship> friendships = jdbcTemplate
-            .query(qs, (rs, rowNum) -> mapRowToFriendship(rs), id1, id2, id1, id2);
+            .query(qs, (rs, rowNum) -> mapRowToFriendship(rs), id1, id2);
         return friendships.size() > 0 ? Optional.of(friendships.get(0)) : Optional.empty();
     }
 
@@ -53,7 +50,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
             "WHERE friendship_id = ?";
         jdbcTemplate.update(qs, friendship.getUserId1(), friendship.getUserId2(),
             friendship.getStatusId(), friendship.getId());
-        return null;
+        return friendship;
     }
 
     @Override

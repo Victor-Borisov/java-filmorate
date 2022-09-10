@@ -49,16 +49,12 @@ public class UserService {
         findById(id);
         findById(friendId);
         Optional<Friendship> friendship = friendshipStorage.findFriendshipByUserIds(id, friendId);
-        if (friendship.isEmpty()) {
-            return friendshipStorage.create(Friendship.builder()
-                    .id(0)
-                    .userId1(id)
-                    .userId2(friendId)
-                    .statusId(1)
-                    .build());
-        } else {
-            return friendship.get();
-        }
+        return friendship.orElseGet(() -> friendshipStorage.create(Friendship.builder()
+                .id(0)
+                .userId1(id)
+                .userId2(friendId)
+                .statusId(1)
+                .build()));
     }
 
     public Friendship deleteFriend(Integer id, Integer friendId) {

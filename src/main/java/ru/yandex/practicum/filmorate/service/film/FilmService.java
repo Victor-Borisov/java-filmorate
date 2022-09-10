@@ -1,26 +1,27 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ObjectDoesNotExistException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.FilmLike;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.filmlike.FilmLikeStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserService userService;
+    private final FilmLikeStorage filmLikeStorage;
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserService userService) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("filmLikeDbStorage") FilmLikeStorage filmLikeStorage) {
         this.filmStorage = filmStorage;
-        this.userService = userService;
+        this.filmLikeStorage = filmLikeStorage;
     }
     public List<Film> findAll() {
         return filmStorage.findAll();
@@ -30,7 +31,7 @@ public class FilmService {
         return filmStorage.findById(id).orElseThrow(() -> new ObjectDoesNotExistException("Film does not exist"));
     }
     public Film create(Film film) {
-        return filmStorage.create(film);
+        return filmStorage.create(film).orElseThrow(() -> new ObjectDoesNotExistException("Film not created"));
     }
 
     public Film update(Film film) {
@@ -39,25 +40,19 @@ public class FilmService {
             throw new ValidationException("Bad id");
         }
         findById(id);
-        return filmStorage.update(film);
+        return filmStorage.update(film).orElseThrow(() -> new ObjectDoesNotExistException("Film not updated"));
     }
 
-    public Film addLike(Integer id, Integer userId) {
-        Film film = findById(id);
-        film.addLike(userId);
-        return film;
+    public FilmLike addLike(Integer filmId, Integer userId) {
+        Optional<FilmLike> filmLike = filmLikeStorage.findFilmLikeByUserIdFilmId(userId, filmId);
+        return filmLike.orElseGet(() -> filmLikeStorage.createFilmLike(userId, filmId).orElseThrow(() -> new ObjectDoesNotExistException("Like not added")));
     }
 
-    public Film deleteLike(Integer id, Integer userId) {
-        Film film = findById(id);
-        userService.findById(userId);
-        film.deleteLike(userId);
-        return film;
+    public FilmLike deleteLike(Integer filmId, Integer userId) {
+        return filmLikeStorage.deleteFilmLike(userId, filmId).orElseThrow(() -> new ObjectDoesNotExistException("Like does not exist"));
     }
 
     public List<Film> getPopular(int count) {
-        List<Film> popularity = filmStorage.findAll();
-        popularity.sort(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed());
-        return popularity.stream().limit(count).collect(Collectors.toList());
+        return filmStorage.getPopular(count);
     }
 }
