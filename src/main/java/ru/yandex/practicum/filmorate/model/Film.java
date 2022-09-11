@@ -32,4 +32,6 @@ public class Film {
     private Mpa mpa;
 
     private List<Genre> genres;
+
+    int rate;
 }

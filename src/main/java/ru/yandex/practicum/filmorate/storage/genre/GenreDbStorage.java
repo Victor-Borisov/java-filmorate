@@ -1,14 +1,18 @@
 package ru.yandex.practicum.filmorate.storage.genre;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Repository
 public class GenreDbStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
@@ -39,6 +43,26 @@ public class GenreDbStorage implements GenreStorage {
         return jdbcTemplate.query(qs,
                 (rs, rowNum) -> mapRowToGenre(rs),
                 filmId);
+    }
+
+    public void filmGenreBatchUpdate(Integer filmId, List<Genre> genreList) {
+        List<Genre> listWithoutDuplicates = genreList.stream().distinct().collect(Collectors.toList());
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setInt(1, filmId);
+                        ps.setInt(2, listWithoutDuplicates.get(i).getId());
+                    }
+                    public int getBatchSize() {
+                        return listWithoutDuplicates.size();
+                    }
+                });
+    }
+
+    @Override
+    public void deleteGenreByFilmId(Integer filmId) {
+        jdbcTemplate.update("DELETE FROM film_genre WHERE film_id = ?", filmId);
     }
 
     private Genre mapRowToGenre(ResultSet rs) throws SQLException {

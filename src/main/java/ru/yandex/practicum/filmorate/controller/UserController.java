@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -17,8 +18,10 @@ import java.util.List;
         consumes = MediaType.ALL_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
 )
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
     private void validateName(User user) {
         String name = user.getName();
         if (name == null || name.isBlank()) {
@@ -26,10 +29,6 @@ public class UserController {
         }
     }
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
     @GetMapping
     public List<User> findAll() {
         return userService.findAll();

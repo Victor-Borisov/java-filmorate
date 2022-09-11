@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS films (
     description TEXT NOT NULL,
     release_date DATE NOT NULL,
     duration INT NOT NULL,
-    rating_mpa_id INT REFERENCES rating_mpa(mpa_id) ON DELETE SET NULL
+    rating_mpa_id INT REFERENCES rating_mpa(mpa_id) ON DELETE SET NULL,
+    rate INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS film_genre (

@@ -21,11 +21,7 @@ import java.util.List;
 )
 @RequiredArgsConstructor
 public class GenreController {
-    private GenreService genreService;
-    @Autowired
-    public GenreController(GenreService genreService) {
-        this.genreService = genreService;
-    }
+    private final GenreService genreService;
 
     @GetMapping
     public List<Genre> findAllMpa() {

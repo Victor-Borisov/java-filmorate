@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.exception.ObjectDoesNotExistException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.filmlike.FilmLikeDbStorage;
@@ -121,7 +122,12 @@ class FilmorateApplicationTests {
 				.releaseDate(LocalDate.of(1989, 4, 17))
 				.mpa(mpa1)
 				.build();
-		filmDbStorage.create(film1);
+		Film createdFilm1 = filmDbStorage.create(film1).orElseThrow(() -> new ObjectDoesNotExistException("Film not created"));
+		if (film1.getGenres() != null) {
+			genreStorage.filmGenreBatchUpdate(createdFilm1.getId(), film1.getGenres());
+		}
+		createdFilm1.setGenres(genreStorage.findGenresByFilmId(createdFilm1.getId()));
+
 		Mpa mpa2 = Mpa.builder().id(3).build();
 		List<Genre> genres2 = Arrays.asList(Genre.builder().id(1).build(), Genre.builder().id(2).build());
 		Film film2 = Film.builder().name("New film").description("New film about friends").duration(190)
@@ -129,7 +135,12 @@ class FilmorateApplicationTests {
 				.mpa(mpa2)
 				.genres(genres2)
 				.build();
-		filmDbStorage.create(film2);
+		Film createdFilm2 = filmDbStorage.create(film2).orElseThrow(() -> new ObjectDoesNotExistException("Film not created"));
+		if (film2.getGenres() != null) {
+			genreStorage.filmGenreBatchUpdate(createdFilm2.getId(), film2.getGenres());
+		}
+		createdFilm2.setGenres(genreStorage.findGenresByFilmId(createdFilm2.getId()));
+
 		Assertions.assertThat(filmDbStorage.findAll()).hasSize(2);
 	}
 	@Order(320)
@@ -148,17 +159,10 @@ class FilmorateApplicationTests {
 				.releaseDate(LocalDate.of(1989, 4, 17))
 				.mpa(mpa1)
 				.build();
+		genreStorage.deleteGenreByFilmId(1);
 		Assertions.assertThat(filmDbStorage.update(film1)).isPresent()
 				.hasValueSatisfying(film ->
 						Assertions.assertThat(film).hasFieldOrPropertyWithValue("name", "Film Updated")
-				);
-	}
-	@Order(340)
-	@Test
-	void findFilmGenreByFilmIdGenreIdTest() {
-		Assertions.assertThat(filmDbStorage.findFilmGenreByFilmIdGenreId(2, 2)).isPresent()
-				.hasValueSatisfying(filmGenre ->
-						Assertions.assertThat(filmGenre).hasFieldOrPropertyWithValue("filmId", 2)
 				);
 	}
 

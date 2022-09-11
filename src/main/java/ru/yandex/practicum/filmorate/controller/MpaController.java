@@ -23,12 +23,7 @@ import java.util.List;
 )
 @RequiredArgsConstructor
 public class MpaController {
-    private MpaService mpaService;
-    @Autowired
-    public MpaController(MpaService mpaService) {
-        this.mpaService = mpaService;
-    }
-
+    private final MpaService mpaService;
     @GetMapping
     public List<Mpa> findAllMpa() {
         return mpaService.findAllMpa();

@@ -32,6 +32,7 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     public Optional<FilmLike> createFilmLike(Integer userId, Integer filmId) {
         final String qs = "INSERT INTO film_like (user_id, film_id) values (?, ?)";
         jdbcTemplate.update(qs, userId, filmId);
+        jdbcTemplate.update("UPDATE films SET rate = rate + 1 WHERE film_id = ? ", filmId);
         return findFilmLikeByUserIdFilmId(userId, filmId);
     }
 
@@ -41,6 +42,7 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
         if (filmLike.isPresent()) {
             final String qs = "DELETE FROM film_like WHERE user_id = ? and film_id = ?";
             jdbcTemplate.update(qs, userId, filmId);
+            jdbcTemplate.update("UPDATE films SET rate = rate - 1 WHERE film_id = ? ", filmId);
         }
         return filmLike;
     }
