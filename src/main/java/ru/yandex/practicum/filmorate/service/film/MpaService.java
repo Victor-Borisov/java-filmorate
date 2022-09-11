@@ -9,22 +9,23 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.filmlike.FilmLikeStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.util.List;
 
 @Service
 public class MpaService {
-    private final FilmStorage filmStorage;
+    private final MpaStorage mpaStorage;
     @Autowired
-    public MpaService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
+    public MpaService(MpaStorage mpaStorage) {
+        this.mpaStorage = mpaStorage;
     }
 
     public List<Mpa> findAllMpa() {
-        return filmStorage.findAllMpa();
+        return mpaStorage.findAllMpa();
     }
     public Mpa findMpaById(Integer id) {
-        return filmStorage.findMpaById(id).orElseThrow(() -> new ObjectDoesNotExistException("Mpa does not exist"));
+        return mpaStorage.findMpaById(id).orElseThrow(() -> new ObjectDoesNotExistException("Mpa does not exist"));
     }
 
 

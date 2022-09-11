@@ -6,22 +6,22 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ObjectDoesNotExistException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.util.List;
 
 @Service
 public class GenreService {
-    private final FilmStorage filmStorage;
+    private final GenreStorage genreStorage;
     @Autowired
-    public GenreService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
+    public GenreService(GenreStorage genreStorage) {
+        this.genreStorage = genreStorage;
     }
-
     public List<Genre> findAllGenre() {
-        return filmStorage.findAllGenre();
+        return genreStorage.findAllGenre();
     }
     public Genre findGenreById(Integer id) {
-        return filmStorage.findGenreById(id).orElseThrow(() -> new ObjectDoesNotExistException("Genre does not exist"));
+        return genreStorage.findGenreById(id).orElseThrow(() -> new ObjectDoesNotExistException("Genre does not exist"));
     }
 
 }

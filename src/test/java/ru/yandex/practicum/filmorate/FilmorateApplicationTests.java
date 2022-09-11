@@ -14,6 +14,8 @@ import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.filmlike.FilmLikeDbStorage;
 import ru.yandex.practicum.filmorate.storage.frienship.FriendshipDbStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.time.LocalDate;
@@ -32,6 +34,8 @@ class FilmorateApplicationTests {
 	private final UserDbStorage userDbStorage;
 	private final FriendshipDbStorage friendshipDbStorage;
 	private final FilmDbStorage filmDbStorage;
+	private final MpaDbStorage mpaDbStorage;
+	private final GenreStorage genreStorage;
 	private final FilmLikeDbStorage filmLikeDbStorage;
 	private final UserController userController;
 
@@ -153,42 +157,42 @@ class FilmorateApplicationTests {
 	@Test
 	void findFilmGenreByFilmIdGenreIdTest() {
 		Assertions.assertThat(filmDbStorage.findFilmGenreByFilmIdGenreId(2, 2)).isPresent()
-				.hasValueSatisfying(film ->
-						Assertions.assertThat(film).hasFieldOrPropertyWithValue("id", 2)
+				.hasValueSatisfying(filmGenre ->
+						Assertions.assertThat(filmGenre).hasFieldOrPropertyWithValue("filmId", 2)
 				);
 	}
 
 	@Order(350)
 	@Test
 	void findGenresByFilmIdTest() {
-		Assertions.assertThat(filmDbStorage.findGenresByFilmId(2)).hasSize(2);
+		Assertions.assertThat(genreStorage.findGenresByFilmId(2)).hasSize(2);
 	}
 
 	@Order(360)
 	@Test
 	void findAllMpaTest() {
-		Assertions.assertThat(filmDbStorage.findAllMpa()).hasSize(5);
+		Assertions.assertThat(mpaDbStorage.findAllMpa()).hasSize(5);
 	}
 
 	@Order(370)
 	@Test
 	void findMpaByIdTest() {
-		Assertions.assertThat(filmDbStorage.findMpaById(3)).isPresent()
-				.hasValueSatisfying(user ->
-						Assertions.assertThat(user).hasFieldOrPropertyWithValue("name", "PG-13")
+		Assertions.assertThat(mpaDbStorage.findMpaById(3)).isPresent()
+				.hasValueSatisfying(mpa ->
+						Assertions.assertThat(mpa).hasFieldOrPropertyWithValue("name", "PG-13")
 				);
 	}
 
 	@Order(380)
 	@Test
 	void findAllGenreTest() {
-		Assertions.assertThat(filmDbStorage.findAllGenre()).hasSize(6);
+		Assertions.assertThat(genreStorage.findAllGenre()).hasSize(6);
 	}
 
 	@Order(390)
 	@Test
 	void findGenreByIdTest() {
-		Assertions.assertThat(filmDbStorage.findGenreById(1)).isPresent()
+		Assertions.assertThat(genreStorage.findGenreById(1)).isPresent()
 				.hasValueSatisfying(user ->
 						Assertions.assertThat(user).hasFieldOrPropertyWithValue("name", "Комедия")
 				);
@@ -199,20 +203,11 @@ class FilmorateApplicationTests {
 	void createFilmLikeTest() {
 		Assertions.assertThat(filmLikeDbStorage.createFilmLike(1, 2)).isPresent()
 				.hasValueSatisfying(filmLike ->
-						Assertions.assertThat(filmLike).hasFieldOrPropertyWithValue("id", 1)
+						Assertions.assertThat(filmLike).hasFieldOrPropertyWithValue("userId", 1)
 				);
 		Assertions.assertThat(filmLikeDbStorage.createFilmLike(2, 2)).isPresent()
 				.hasValueSatisfying(filmLike ->
-						Assertions.assertThat(filmLike).hasFieldOrPropertyWithValue("id", 2)
-				);
-	}
-
-	@Order(410)
-	@Test
-	void findFilmLikeByIdTest() {
-		Assertions.assertThat(filmLikeDbStorage.findFilmLikeById(1)).isPresent()
-				.hasValueSatisfying(filmLike ->
-						Assertions.assertThat(filmLike).hasFieldOrPropertyWithValue("userId", 1)
+						Assertions.assertThat(filmLike).hasFieldOrPropertyWithValue("userId", 2)
 				);
 	}
 
@@ -221,7 +216,7 @@ class FilmorateApplicationTests {
 	void findFilmLikeByUserIdFilmIdTest() {
 		Assertions.assertThat(filmLikeDbStorage.findFilmLikeByUserIdFilmId(1, 2)).isPresent()
 				.hasValueSatisfying(filmLike ->
-						Assertions.assertThat(filmLike).hasFieldOrPropertyWithValue("id", 1)
+						Assertions.assertThat(filmLike).hasFieldOrPropertyWithValue("userId", 1)
 				);
 	}
 

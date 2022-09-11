@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -14,15 +15,15 @@ import ru.yandex.practicum.filmorate.service.film.MpaService;
 
 import java.util.List;
 
-@Validated
 @RestController
 @RequestMapping(
         value = "/mpa",
         consumes = MediaType.ALL_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
 )
+@RequiredArgsConstructor
 public class MpaController {
-    MpaService mpaService;
+    private MpaService mpaService;
     @Autowired
     public MpaController(MpaService mpaService) {
         this.mpaService = mpaService;

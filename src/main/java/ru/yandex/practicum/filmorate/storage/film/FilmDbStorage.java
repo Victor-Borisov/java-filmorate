@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -8,51 +9,39 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final GenreStorage genreStorage;
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage, GenreStorage genreStorage1) {
         this.jdbcTemplate = jdbcTemplate;
+        this.genreStorage = genreStorage1;
     }
 
     @Override
     public List<Film> findAll() {
-        final String qs = "SELECT f.film_id," +
-                "f.name, " +
-                "f.description, " +
-                "f.release_date, " +
-                "f.duration, " +
-                "m.mpa_id, " +
-                "m.mpa_name " +
-                "FROM films f " +
-                "INNER JOIN rating_mpa m ON m.mpa_id = f.rating_mpa_id;";
+        final String qs = "SELECT * FROM films f, rating_mpa m WHERE m.mpa_id = f.rating_mpa_id";
         return jdbcTemplate.query(qs, (rs, rowNum) -> {
             final Integer filmId = rs.getInt("film_id");
-            return mapRowToFilm(rs, findGenresByFilmId(filmId));
+            return mapRowToFilm(rs, genreStorage.findGenresByFilmId(filmId));
         });
     }
 
     @Override
     public Optional<Film> findById(Integer id) {
-        final String qs = "SELECT f.film_id," +
-                "f.name, " +
-                "f.description, " +
-                "f.release_date, " +
-                "f.duration, " +
-                "m.mpa_id, " +
-                "m.mpa_name " +
-                "FROM films f " +
-                "LEFT JOIN rating_mpa m ON m.mpa_id = f.rating_mpa_id " +
-                "WHERE f.film_id = ?";
-        final List<Film> films = jdbcTemplate.query(qs, (rs, rowNum) -> mapRowToFilm(rs, findGenresByFilmId(id)), id);
+        final String qs = "SELECT * FROM films f, rating_mpa m WHERE m.mpa_id = f.rating_mpa_id AND f.film_id = ?";
+        final List<Film> films = jdbcTemplate.query(qs, (rs, rowNum) -> mapRowToFilm(rs, genreStorage.findGenresByFilmId(id)), id);
         return films.size() > 0 ? Optional.of(films.get(0)) : Optional.empty();
     }
 
@@ -68,14 +57,8 @@ public class FilmDbStorage implements FilmStorage {
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
         Integer justAddedFilmId = simpleJdbcInsert.executeAndReturnKey(values).intValue();
-        final List<Genre> genres = film.getGenres();
-        if (genres != null) {
-            final String qsGenre = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-            genres.forEach(g -> {
-                if (findFilmGenreByFilmIdGenreId(justAddedFilmId, g.getId()).isEmpty()) {
-                    jdbcTemplate.update(qsGenre, justAddedFilmId, g.getId());
-                }
-            });
+        if (film.getGenres() != null) {
+            filmGenreBatchUpdate(justAddedFilmId, film.getGenres());
         }
         return findById(justAddedFilmId);
     }
@@ -87,16 +70,9 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(qs, film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
 
-        qs = "DELETE FROM film_genre WHERE film_id = ?";
-        jdbcTemplate.update(qs, film.getId());
-        final List<Genre> genres = film.getGenres();
-        if (genres != null) {
-            final String qsGenre = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-            genres.forEach(g -> {
-                if (findFilmGenreByFilmIdGenreId(film.getId(), g.getId()).isEmpty()) {
-                    jdbcTemplate.update(qsGenre, film.getId(), g.getId());
-                }
-            });
+        jdbcTemplate.update("DELETE FROM film_genre WHERE film_id = ?", film.getId());
+        if (film.getGenres() != null) {
+            filmGenreBatchUpdate(film.getId(), film.getGenres());
         }
         return findById(film.getId());
     }
@@ -129,8 +105,16 @@ public class FilmDbStorage implements FilmStorage {
                 "LIMIT ?";
         return jdbcTemplate.query(qs, (rs, rowNum) -> {
             final Integer filmId = rs.getInt("film_id");
-            return mapRowToFilm(rs, findGenresByFilmId(filmId));
+            return mapRowToFilm(rs, genreStorage.findGenresByFilmId(filmId));
         }, count);
+    }
+
+    @Override
+    public Optional<FilmGenre> findFilmGenreByFilmIdGenreId(Integer filmId, Integer genreId) {
+        final String qs = "SELECT film_id, genre_id FROM film_genre WHERE film_id = ? AND genre_id = ?";
+        final List<FilmGenre> filmGenres = jdbcTemplate
+                .query(qs, (rs, rowNum) -> mapRowToFilmGenre(rs), filmId, genreId);
+        return filmGenres.size() > 0 ? Optional.of(filmGenres.get(0)) : Optional.empty();
     }
 
     private Film mapRowToFilm(ResultSet rs, List<Genre> genres) throws SQLException {
@@ -148,71 +132,28 @@ public class FilmDbStorage implements FilmStorage {
                 .genres(genres)
                 .build();
     }
-    //FilmGenreDbStorage
-    @Override
-    public Optional<FilmGenre> findFilmGenreByFilmIdGenreId(Integer filmId, Integer genreId) {
-        final String qs = "SELECT film_genre_id, film_id, genre_id " +
-                "FROM film_genre WHERE film_id = ? AND genre_id = ?";
-        final List<FilmGenre> filmGenres = jdbcTemplate
-                .query(qs, (rs, rowNum) -> mapRowToFilmGenre(rs), filmId, genreId);
-        return filmGenres.size() > 0 ? Optional.of(filmGenres.get(0)) : Optional.empty();
-    }
 
-    @Override
-    public List<Genre> findGenresByFilmId(Integer filmId) {
-        final String qs = "SELECT g.genre_id, g.genre_name " +
-                "FROM genre g " +
-                "INNER JOIN film_genre fg on g.genre_id = fg.genre_id " +
-                "WHERE film_id = ?";
-        return jdbcTemplate.query(qs,
-                (rs, rowNum) -> mapRowToGenre(rs),
-                filmId);
-    }
-
-    private Genre mapRowToGenre(ResultSet rs) throws SQLException {
-        return Genre.builder()
-                .id(rs.getInt("genre_id"))
-                .name(rs.getString("genre_name"))
-                .build();
+    private int [] filmGenreBatchUpdate(Integer filmId, List<Genre> genreList) {
+        List<Genre> listWithoutDuplicates = genreList.stream().distinct().collect(Collectors.toList());
+        return jdbcTemplate.batchUpdate(
+                "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setInt(1, filmId);
+                        ps.setInt(2, listWithoutDuplicates.get(i).getId());
+                    }
+                    public int getBatchSize() {
+                        return listWithoutDuplicates.size();
+                    }
+                });
     }
 
     private FilmGenre mapRowToFilmGenre(ResultSet rs) throws SQLException {
         return FilmGenre.builder()
-                .id(rs.getInt("film_genre_id"))
                 .filmId(rs.getInt("film_id"))
                 .genreId(rs.getInt("genre_id"))
                 .build();
     }
-    @Override
-    public List<Mpa> findAllMpa() {
-        final String qs = "SELECT mpa_id, mpa_name FROM rating_mpa";
-        return jdbcTemplate.query(qs, (rs, rowNum) -> mapRowToMpa(rs));
-    }
 
-    @Override
-    public Optional<Mpa> findMpaById(Integer id) {
-        final String qs = "SELECT mpa_id, mpa_name FROM rating_mpa WHERE mpa_id = ?";
-        final List<Mpa> mpas = jdbcTemplate.query(qs, (rs, rowNum) -> mapRowToMpa(rs), id);
-        return mpas.size() > 0 ? Optional.of(mpas.get(0)) : Optional.empty();
-    }
-
-    private Mpa mapRowToMpa(ResultSet rs) throws SQLException {
-        return Mpa.builder()
-                .id(rs.getInt("mpa_id"))
-                .name(rs.getString("mpa_name"))
-                .build();
-    }
-    @Override
-    public List<Genre> findAllGenre() {
-        final String qs = "SELECT genre_id, genre_name FROM genre";
-        return jdbcTemplate.query(qs, (rs, rowNum) -> mapRowToGenre(rs));
-    }
-
-    @Override
-    public Optional<Genre> findGenreById(Integer id) {
-        final String qs = "SELECT genre_id, genre_name FROM genre WHERE genre_id = ?";
-        final List<Genre> genres = jdbcTemplate.query(qs, (rs, rowNum) -> mapRowToGenre(rs), id);
-        return genres.size() > 0 ? Optional.of(genres.get(0)) : Optional.empty();
-    }
 
 }

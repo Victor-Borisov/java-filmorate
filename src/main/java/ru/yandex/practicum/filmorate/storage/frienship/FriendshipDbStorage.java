@@ -71,17 +71,12 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
     @Override
     public List<Integer> getCommonFriendIdsByUserIds(Integer id1, Integer id2) {
-        final String qs = "SELECT a.user_id_2 " +
-                "FROM ( " +
-                "         SELECT f.user_id_2 " +
-                "         FROM friendship f " +
-                "         WHERE f.user_id_1 = ? " +
-                "     ) a " +
-                "INNER JOIN ( " +
-                "    SELECT f.user_id_2 " +
-                "    FROM friendship f " +
-                "    WHERE f.user_id_1 = ? " +
-                ") b on a.user_id_2  = b.user_id_2";
+        final String qs = "SELECT u.user_id " +
+                "FROM users u, friendship f, friendship o " +
+                "WHERE u.user_id = f.user_id_2 " +
+                "AND u.user_id = o.user_id_2 " +
+                "AND f.user_id_1 = ? " +
+                "AND o.user_id_1 = ?";
         return jdbcTemplate.queryForList(qs, Integer.class, id1, id2);
     }
 

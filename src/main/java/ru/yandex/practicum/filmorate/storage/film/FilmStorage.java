@@ -20,12 +20,7 @@ public interface FilmStorage {
     Optional<Film> deleteById(Integer id);
 
     List<Film> getPopular(int count);
-    List<Mpa> findAllMpa();
-    Optional<Mpa> findMpaById(Integer id);
-    List<Genre> findAllGenre();
-    Optional<Genre> findGenreById(Integer id);
     Optional<FilmGenre> findFilmGenreByFilmIdGenreId(Integer filmId, Integer genreId);
 
-    List<Genre> findGenresByFilmId(Integer filmId);
 
 }

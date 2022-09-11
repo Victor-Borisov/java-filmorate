@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -12,15 +13,15 @@ import ru.yandex.practicum.filmorate.service.film.GenreService;
 
 import java.util.List;
 
-@Validated
 @RestController
 @RequestMapping(
         value = "/genres",
         consumes = MediaType.ALL_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
 )
+@RequiredArgsConstructor
 public class GenreController {
-    GenreService genreService;
+    private GenreService genreService;
     @Autowired
     public GenreController(GenreService genreService) {
         this.genreService = genreService;

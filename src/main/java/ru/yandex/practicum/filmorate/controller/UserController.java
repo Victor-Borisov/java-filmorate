@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.service.user.UserService;
 import javax.validation.Valid;
 import java.util.List;
 
-@Validated
 @RestController
 @RequestMapping(
         value = "/users",
