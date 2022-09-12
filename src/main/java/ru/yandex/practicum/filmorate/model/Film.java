@@ -1,16 +1,17 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.yandex.practicum.filmorate.validator.ReleaseDate;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Data
+@Builder
 public class Film {
     private Integer id;
     @NotBlank(message = "Name must be not blank")
@@ -28,13 +29,9 @@ public class Film {
     @Positive
     private int duration;
 
-    private Set<Integer> likes = new HashSet<>();
+    private Mpa mpa;
 
-    public void addLike(Integer id) {
-        likes.add(id);
-    }
+    private List<Genre> genres;
 
-    public void deleteLike(Integer id) {
-        likes.remove(id);
-    }
+    private int rate;
 }
