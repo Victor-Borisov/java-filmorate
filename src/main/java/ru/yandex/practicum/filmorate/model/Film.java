@@ -33,5 +33,5 @@ public class Film {
 
     private List<Genre> genres;
 
-    int rate;
+    private int rate;
 }
